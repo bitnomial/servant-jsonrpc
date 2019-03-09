@@ -25,4 +25,4 @@ library
     , base >=4.12 && <4.13
     , servant ==0.16.*
     , servant-client-core ==0.16.*
-    , servant-server
+    , servant-server ==0.16.*
