@@ -6,12 +6,17 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
-{-# LANGUAGE TypeApplications      #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
-module Servant.JsonRpc where
+module Servant.JsonRpc
+    ( JsonRpc
+    , JsonRpcEndpoint
+    , Request (..)
+    , Response (..)
+    , JsonRpcErr (..)
+    ) where
 
 
 import           Control.Applicative (liftA3)
@@ -22,7 +27,6 @@ import           Data.Proxy
 import           Data.Word           (Word64)
 import           GHC.TypeLits        (KnownSymbol, Symbol, symbolVal)
 import           Servant.API         ((:>), JSON, Post, ReqBody)
-import           Servant.Client.Core (HasClient (..), RunClient)
 import           Servant.Server      (HasServer (..))
 
 
@@ -102,30 +106,3 @@ data JsonRpc (method :: Symbol) p e r
 
 type JsonRpcEndpoint p e r
     = ReqBody '[JSON] (Request p) :> Post '[JSON] (Response e r)
-
-instance (RunClient m, KnownSymbol method, ToJSON p, FromJSON e, FromJSON r)
-    => HasClient m (JsonRpc method p e r) where
-
-    type Client m (JsonRpc method p e r)
-        = Word64 -> p -> m (Either (JsonRpcErr e) r)
-
-    clientWithRoute _ _ req ix p =
-        let client = clientWithRoute (Proxy @m) (Proxy @(JsonRpcEndpoint p e r))
-            repack (Result _ r) = Right r
-            repack (Errors x)   = Left x
-        in repack <$> client req (Request (symbolVal $ Proxy @method) p ix)
-
-    hoistClientMonad _ _ f x ix p = f $ x ix p
-
-instance (KnownSymbol method, FromJSON p, ToJSON e, ToJSON r)
-    => HasServer (JsonRpc method p e r) context where
-
-    type ServerT (JsonRpc method p e r) m = p -> m (Either (JsonRpcErr e) r)
-
-    route _ cx = route (Proxy @(JsonRpcEndpoint p e r)) cx . fmap f
-        where
-        f x (Request _ p ix) = g ix <$> x p
-        g ix (Right r) = Result ix r
-        g _ (Left e)   = Errors e
-
-    hoistServerWithContext _ _ f x p = f $ x p

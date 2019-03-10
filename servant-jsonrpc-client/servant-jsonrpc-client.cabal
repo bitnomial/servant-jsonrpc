@@ -1,0 +1,23 @@
+name:                servant-jsonrpc-client
+version:             0.1.0
+homepage:            https://github.com/GambolingPangolin/servant-jsonrpc
+license:             PublicDomain
+author:              The servant-jsonrpc developers
+maintainer:          ics@gambolingpangolin.com
+category:            Web
+build-type:          Simple
+extra-source-files:  CHANGELOG.md
+cabal-version:       >=1.10
+
+library
+  exposed-modules:
+    Servant.Client.JsonRpc
+
+  build-depends:       
+      aeson
+    , base >=4.12 && <4.13
+    , servant-client-core ==0.16.*
+    , servant-jsonrpc
+
+  hs-source-dirs:      src
+  default-language:    Haskell2010

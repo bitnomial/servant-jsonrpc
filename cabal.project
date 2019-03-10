@@ -1,0 +1,3 @@
+packages:
+  servant-jsonrpc/
+  servant-jsonrpc-client/
