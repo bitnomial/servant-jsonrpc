@@ -28,8 +28,7 @@ import           Servant.Server      (HasServer (..))
 
 data Request p
     = Request { method :: String, params :: p, id :: Word64 }
-    deriving Eq
-
+    deriving (Eq, Show)
 
 instance ToJSON p => ToJSON (Request p) where
     toJSON (Request m p ix) =
@@ -37,13 +36,6 @@ instance ToJSON p => ToJSON (Request p) where
                , "method" .= m
                , "params" .= p
                , "id" .= ix ]
-
-
-versionGuard :: String -> Parser a -> Parser a
-versionGuard v x
-    | v == "2.0" = x
-    | otherwise  = fail "unknown version"
-
 
 instance FromJSON p => FromJSON (Request p) where
     parseJSON = withObject "JsonRpc Request" $ \obj -> do
@@ -55,11 +47,20 @@ instance FromJSON p => FromJSON (Request p) where
         versionGuard version . pure $ Request method p ix
 
 
+versionGuard :: String -> Parser a -> Parser a
+versionGuard v x
+    | v == "2.0" = x
+    | otherwise  = fail "unknown version"
+
+
 data Response e r
     = Result Word64 r
     | Errors (JsonRpcErr e)
+    deriving (Eq, Show)
+
 
 data JsonRpcErr e = JsonRpcErr Int String (Maybe e)
+    deriving (Eq, Show)
 
 instance (FromJSON e, FromJSON r) => FromJSON (Response e r) where
     parseJSON = withObject "Response" $ \obj -> do
@@ -77,7 +78,6 @@ instance (FromJSON e, FromJSON r) => FromJSON (Response e r) where
 
         parseErr = withObject "Error" $
             liftA3 JsonRpcErr <$> (.: "code") <*> (.: "message") <*> (.:? "data")
-
 
 instance (ToJSON e, ToJSON r) => ToJSON (Response e r) where
     toJSON (Result ix r) =
@@ -116,7 +116,6 @@ instance (RunClient m, KnownSymbol method, ToJSON p, FromJSON e, FromJSON r)
         in repack <$> client req (Request (symbolVal $ Proxy @method) p ix)
 
     hoistClientMonad _ _ f x ix p = f $ x ix p
-
 
 instance (KnownSymbol method, FromJSON p, ToJSON e, ToJSON r)
     => HasServer (JsonRpc method p e r) context where
