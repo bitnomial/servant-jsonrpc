@@ -1,6 +1,3 @@
--- |
--- Module: Servant.Server.JsonRpc
-
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -10,6 +7,8 @@
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
+-- |
+-- Module: Servant.Server.JsonRpc
 module Servant.Server.JsonRpc
     ( JsonRpc
     , Request (..)
@@ -19,6 +18,7 @@ module Servant.Server.JsonRpc
 
 
 import           Data.Aeson      (FromJSON, ToJSON)
+import           Data.Proxy
 import           GHC.TypeLits    (KnownSymbol, symbolVal)
 import           Servant.JsonRpc
 import           Servant.Server  (HasServer (..))
