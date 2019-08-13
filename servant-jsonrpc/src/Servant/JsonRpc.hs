@@ -14,7 +14,7 @@ module Servant.JsonRpc
     ( JsonRpc
     , JsonRpcEndpoint
     , Request (..)
-    , Response (..)
+    , JsonRpcResponse (..)
     , JsonRpcErr (..)
     ) where
 
@@ -34,6 +34,7 @@ data Request p
     = Request { method :: String, params :: p, id :: Word64 }
     deriving (Eq, Show)
 
+
 instance ToJSON p => ToJSON (Request p) where
     toJSON (Request m p ix) =
         object [ "jsonrpc" .= ("2.0" :: String)
@@ -41,11 +42,12 @@ instance ToJSON p => ToJSON (Request p) where
                , "params" .= p
                , "id" .= ix ]
 
+
 instance FromJSON p => FromJSON (Request p) where
     parseJSON = withObject "JsonRpc Request" $ \obj -> do
-        ix <- obj .: "id"
-        method <- obj .: "method"
-        p <- obj .: "params"
+        ix      <- obj .: "id"
+        method  <- obj .: "method"
+        p       <- obj .: "params"
         version <- obj .: "jsonrpc"
 
         versionGuard version . pure $ Request method p ix
@@ -57,7 +59,7 @@ versionGuard v x
     | otherwise  = fail "unknown version"
 
 
-data Response e r
+data JsonRpcResponse e r
     = Result Word64 r
     | Errors (JsonRpcErr e)
     deriving (Eq, Show)
@@ -66,12 +68,13 @@ data Response e r
 data JsonRpcErr e = JsonRpcErr Int String (Maybe e)
     deriving (Eq, Show)
 
-instance (FromJSON e, FromJSON r) => FromJSON (Response e r) where
+
+instance (FromJSON e, FromJSON r) => FromJSON (JsonRpcResponse e r) where
     parseJSON = withObject "Response" $ \obj -> do
-        ix <- obj .: "id"
+        ix      <- obj .: "id"
         version <- obj .: "jsonrpc"
-        result <- obj .:? "result"
-        err <- obj .:? "error"
+        result  <- obj .:? "result"
+        err     <- obj .:? "error"
         versionGuard version $ pack ix result err
 
         where
@@ -83,7 +86,8 @@ instance (FromJSON e, FromJSON r) => FromJSON (Response e r) where
         parseErr = withObject "Error" $
             liftA3 JsonRpcErr <$> (.: "code") <*> (.: "message") <*> (.:? "data")
 
-instance (ToJSON e, ToJSON r) => ToJSON (Response e r) where
+
+instance (ToJSON e, ToJSON r) => ToJSON (JsonRpcResponse e r) where
     toJSON (Result ix r) =
         object [ "jsonrpc" .= ("2.0" :: String)
                , "result" .= r
@@ -104,5 +108,6 @@ instance (ToJSON e, ToJSON r) => ToJSON (Response e r) where
 -- | This is the type used to specify JSON-RPC endpoints
 data JsonRpc (method :: Symbol) p e r
 
+
 type JsonRpcEndpoint p e r
-    = ReqBody '[JSON] (Request p) :> Post '[JSON] (Response e r)
+    = ReqBody '[JSON] (Request p) :> Post '[JSON] (JsonRpcResponse e r)

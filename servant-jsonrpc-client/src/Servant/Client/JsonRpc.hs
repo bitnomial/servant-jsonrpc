@@ -1,5 +1,8 @@
 -- |
 -- Module: Servant.Client.JsonRpc
+--
+-- This client implementation runs over HTTP and the semantics of HTTP remove
+-- the need for the message id.
 
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -11,7 +14,7 @@
 module Servant.Client.JsonRpc
     ( JsonRpc
     , Request (..)
-    , Response (..)
+    , JsonRpcResponse (..)
     , JsonRpcErr (..)
     ) where
 
@@ -21,21 +24,17 @@ import           Data.Word           (Word64)
 import           GHC.TypeLits        (KnownSymbol, symbolVal)
 import           Servant.Client.Core (HasClient (..), RunClient)
 import           Servant.JsonRpc     (JsonRpc, JsonRpcEndpoint (..),
-                                      JsonRpcErr (..), Request (..),
-                                      Response (..))
+                                      JsonRpcErr (..), JsonRpcResponse (..),
+                                      Request (..))
 
 instance (RunClient m, KnownSymbol method, ToJSON p, FromJSON e, FromJSON r)
     => HasClient m (JsonRpc method p e r) where
 
     type Client m (JsonRpc method p e r)
-        = Word64 -> p -> m (Either (JsonRpcErr e) r)
+        = p -> m (JsonRpcResponse e r)
 
-    clientWithRoute _ _ req ix p =
+    clientWithRoute _ _ req p =
         let client = clientWithRoute (Proxy @m) (Proxy @(JsonRpcEndpoint p e r))
-            repack (Result _ r) = Right r
-            repack (Errors x)   = Left x
-        in repack <$> client req (Request (symbolVal $ Proxy @method) p ix)
+        in client req $ Request (symbolVal $ Proxy @method) p 0
 
-    hoistClientMonad _ _ f x ix p = f $ x ix p
-
-
+    hoistClientMonad _ _ f x p = f $ x p
