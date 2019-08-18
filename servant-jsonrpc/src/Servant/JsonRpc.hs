@@ -23,6 +23,7 @@ import           Control.Applicative (liftA3)
 import           Data.Aeson          (FromJSON (..), ToJSON (..), Value (Null),
                                       object, withObject, (.:), (.:?), (.=))
 import           Data.Aeson.Types    (Parser)
+import           Data.Maybe          (isNothing)
 import           Data.Proxy
 import           Data.Word           (Word64)
 import           GHC.TypeLits        (KnownSymbol, Symbol, symbolVal)
@@ -53,10 +54,11 @@ instance FromJSON p => FromJSON (Request p) where
         versionGuard version . pure $ Request method p ix
 
 
-versionGuard :: String -> Parser a -> Parser a
+versionGuard :: Maybe String -> Parser a -> Parser a
 versionGuard v x
-    | v == "2.0" = x
-    | otherwise  = fail "unknown version"
+    | v == Just "2.0" = x
+    | isNothing v     = x
+    | otherwise       = fail "unknown version"
 
 
 data JsonRpcResponse e r
@@ -71,8 +73,8 @@ data JsonRpcErr e = JsonRpcErr Int String (Maybe e)
 
 instance (FromJSON e, FromJSON r) => FromJSON (JsonRpcResponse e r) where
     parseJSON = withObject "Response" $ \obj -> do
-        ix      <- obj .: "id"
-        version <- obj .: "jsonrpc"
+        ix      <- obj .:  "id"
+        version <- obj .:? "jsonrpc"
         result  <- obj .:? "result"
         err     <- obj .:? "error"
         versionGuard version $ pack ix result err

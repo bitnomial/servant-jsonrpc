@@ -1,5 +1,5 @@
 name:                servant-jsonrpc
-version:             0.1.0
+version:             0.1.1
 homepage:            https://github.com/GambolingPangolin/servant-jsonrpc
 license:             PublicDomain
 author:              The servant-jsonrpc developers
@@ -20,7 +20,7 @@ library
   exposed-modules:
     Servant.JsonRpc
 
-  build-depends:       
+  build-depends:
       aeson >=1.4 && <1.5
     , base >=4.12 && <4.13
     , servant ==0.16.*
