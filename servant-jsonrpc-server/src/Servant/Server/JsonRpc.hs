@@ -12,7 +12,6 @@
 module Servant.Server.JsonRpc
     ( JsonRpc
     , Request (..)
-    , Response (..)
     , JsonRpcErr (..)
     ) where
 

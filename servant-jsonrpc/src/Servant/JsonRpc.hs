@@ -67,8 +67,11 @@ data JsonRpcResponse e r
     deriving (Eq, Show)
 
 
-data JsonRpcErr e = JsonRpcErr Int String (Maybe e)
-    deriving (Eq, Show)
+data JsonRpcErr e = JsonRpcErr
+    { errorCode    :: Int
+    , errorMessage :: String
+    , errorData    :: Maybe e
+    } deriving (Eq, Show)
 
 
 instance (FromJSON e, FromJSON r) => FromJSON (JsonRpcResponse e r) where

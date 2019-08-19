@@ -5,6 +5,7 @@
 -- the need for the message id.
 
 {-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE LambdaCase            #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeApplications      #-}
@@ -31,10 +32,16 @@ instance (RunClient m, KnownSymbol method, ToJSON p, FromJSON e, FromJSON r)
     => HasClient m (JsonRpc method p e r) where
 
     type Client m (JsonRpc method p e r)
-        = p -> m (JsonRpcResponse e r)
+        = p -> m (Either (JsonRpcErr e) r)
 
     clientWithRoute _ _ req p =
-        let client = clientWithRoute (Proxy @m) (Proxy @(JsonRpcEndpoint p e r))
-        in client req $ Request (symbolVal $ Proxy @method) p 0
+        repack <$> client req jsonRpcRequest
+        where
+        client = clientWithRoute (Proxy @m) (Proxy @(JsonRpcEndpoint p e r))
+        jsonRpcRequest = Request (symbolVal $ Proxy @method) p 0
+        repack = \case
+            Result _ x -> Right x
+            Errors e -> Left e
+
 
     hoistClientMonad _ _ f x p = f $ x p
