@@ -63,7 +63,8 @@ versionGuard v x
 
 data JsonRpcResponse e r
     = Result Word64 r
-    | Errors (JsonRpcErr e)
+    | Ack Word64
+    | Errors (Maybe Word64) (JsonRpcErr e)
     deriving (Eq, Show)
 
 
@@ -85,7 +86,8 @@ instance (FromJSON e, FromJSON r) => FromJSON (JsonRpcResponse e r) where
         where
 
         pack (Just ix) (Just r) Nothing = pure $ Result ix r
-        pack Nothing Nothing (Just e)   = Errors <$> parseErr e
+        pack ix Nothing (Just e)        = Errors ix <$> parseErr e
+        pack (Just ix) Nothing Nothing  = pure $ Ack ix
         pack _ _ _                      = fail "invalid response"
 
         parseErr = withObject "Error" $
@@ -95,19 +97,29 @@ instance (FromJSON e, FromJSON r) => FromJSON (JsonRpcResponse e r) where
 instance (ToJSON e, ToJSON r) => ToJSON (JsonRpcResponse e r) where
     toJSON (Result ix r) =
         object [ "jsonrpc" .= ("2.0" :: String)
-               , "result" .= r
-               , "id" .= ix
+               , "result"  .= r
+               , "id"      .= ix
                ]
 
-    toJSON (Errors (JsonRpcErr c msg err)) =
+    toJSON (Ack ix) =
         object [ "jsonrpc" .= ("2.0" :: String)
-               , "id" .= Null
-               , "error" .=
-                    object [ "code" .= c
-                           , "message" .= msg
-                           , "data" .= err
-                           ]
+               , "id"      .= ix
+               , "result"  .= Null
+               , "error"   .= Null
                ]
+
+    toJSON (Errors ix (JsonRpcErr c msg err)) =
+        object [ "jsonrpc" .= ("2.0" :: String)
+               , "id"      .= ix
+               , "error"   .= detail
+
+               ]
+
+         where
+         detail = object [ "code"    .= c
+                         , "message" .= msg
+                         , "data"    .= err
+                           ]
 
 
 -- | This is the type used to specify JSON-RPC endpoints
