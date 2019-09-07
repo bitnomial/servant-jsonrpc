@@ -1,25 +1,23 @@
+cabal-version:       2.4
 name:                servant-jsonrpc-server
 version:             0.1.0
--- synopsis:
--- description:
 homepage:            https://github.com/GambolingPangolin/servant-jsonrpc
-license:             PublicDomain
+license:             ISC
 author:              The servant-jsonrpc developers
 maintainer:          ics@gambolingpangolin.com
 category:            Web
 build-type:          Simple
 extra-source-files:  CHANGELOG.md
-cabal-version:       >=1.10
 
 library
   exposed-modules:
     Servant.Server.JsonRpc
 
-  build-depends:       
-      aeson
-    , base >=4.12 && <4.13
-    , servant-jsonrpc
-    , servant-server ==0.16.*
+  build-depends:
+      aeson                 >=1.4           && <2.0
+    , base                  >=4.12          && <5.0
+    , servant-jsonrpc       >=0.1.1         && <0.2
+    , servant-server        ==0.16.*
 
   hs-source-dirs:      src
   default-language:    Haskell2010
