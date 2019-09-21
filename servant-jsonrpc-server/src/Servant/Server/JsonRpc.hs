@@ -32,6 +32,6 @@ instance (KnownSymbol method, FromJSON p, ToJSON e, ToJSON r)
         where
         f x (Request _ p ix) = g ix <$> x p
         g ix (Right r) = Result ix r
-        g _ (Left e)   = Errors e
+        g ix (Left e)  = Errors (Just ix) e
 
     hoistServerWithContext _ _ f x p = f $ x p
