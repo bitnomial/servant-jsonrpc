@@ -1,4 +1,4 @@
-packages:
-  servant-jsonrpc/
-  servant-jsonrpc-client/
-  servant-jsonrpc-server/
+packages: */*.cabal
+
+package *
+  ghc-options: -Wall

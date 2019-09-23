@@ -1,6 +1,3 @@
--- |
--- Module: Servant.JsonRpc
-
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -10,12 +7,31 @@
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
+-- |
+-- Module: Servant.JsonRpc
+--
+-- Work with JSON-RPC protocol messages at both type and value level.
+--
+-- > type Mul = JsonRpc "mul" (Int, Int) String Int
+-- >
+-- > req :: Request (Int, Int)
+-- > req = Request "mul" (3, 5) (Just 0)
+-- >
+-- > rsp :: JsonRpcResponse String Int
+-- > rsp = Result 0 15
 module Servant.JsonRpc
-    ( JsonRpc
-    , JsonRpcEndpoint
+    (
+    -- * API specification types
+      JsonRpc
+    , JsonRpcNotification
+
+    -- * JSON-RPC messages
     , Request (..)
     , JsonRpcResponse (..)
     , JsonRpcErr (..)
+
+    -- * Type rewriting
+    , JsonRpcEndpoint
     ) where
 
 
@@ -24,34 +40,43 @@ import           Data.Aeson          (FromJSON (..), ToJSON (..), Value (Null),
                                       object, withObject, (.:), (.:?), (.=))
 import           Data.Aeson.Types    (Parser)
 import           Data.Maybe          (isNothing)
-import           Data.Proxy
 import           Data.Word           (Word64)
-import           GHC.TypeLits        (KnownSymbol, Symbol, symbolVal)
-import           Servant.API         ((:>), JSON, Post, ReqBody)
-import           Servant.Server      (HasServer (..))
+import           GHC.TypeLits        (Symbol)
+import           Servant.API         ((:>), JSON, NoContent, Post, ReqBody)
 
 
+-- | Client messages
 data Request p
-    = Request { method :: String, params :: p, id :: Word64 }
-    deriving (Eq, Show)
+    = Request
+    { method    :: String
+    , params    :: p
+
+    -- | should be omitted only if the message is a notification, with no response content
+    , requestId :: Maybe Word64
+    } deriving (Eq, Show)
 
 
 instance ToJSON p => ToJSON (Request p) where
     toJSON (Request m p ix) =
-        object [ "jsonrpc" .= ("2.0" :: String)
-               , "method" .= m
-               , "params" .= p
-               , "id" .= ix ]
+        object
+            . maybe id (onValue "id") ix
+            $ [ "jsonrpc" .= ("2.0" :: String)
+              , "method" .= m
+              , "params" .= p
+              ]
+
+        where
+        onValue n v = ((n .= v) :)
 
 
 instance FromJSON p => FromJSON (Request p) where
     parseJSON = withObject "JsonRpc Request" $ \obj -> do
-        ix      <- obj .: "id"
-        method  <- obj .: "method"
-        p       <- obj .: "params"
-        version <- obj .: "jsonrpc"
+        ix <- obj .:? "id"
+        m  <- obj .:  "method"
+        p  <- obj .:  "params"
+        v  <- obj .:  "jsonrpc"
 
-        versionGuard version . pure $ Request method p ix
+        versionGuard v . pure $ Request m p ix
 
 
 versionGuard :: Maybe String -> Parser a -> Parser a
@@ -61,6 +86,8 @@ versionGuard v x
     | otherwise       = fail "unknown version"
 
 
+-- | Server messages.  An 'Ack' is a message which refers to a 'Request' but
+-- both its "errors" and "result" keys are null
 data JsonRpcResponse e r
     = Result Word64 r
     | Ack Word64
@@ -122,9 +149,17 @@ instance (ToJSON e, ToJSON r) => ToJSON (JsonRpcResponse e r) where
                            ]
 
 
--- | This is the type used to specify JSON-RPC endpoints
+-- | JSON-RPC endpoints which respond with a result
 data JsonRpc (method :: Symbol) p e r
 
 
-type JsonRpcEndpoint p e r
-    = ReqBody '[JSON] (Request p) :> Post '[JSON] (JsonRpcResponse e r)
+-- | JSON-RPC endpoints which do not respond
+data JsonRpcNotification (method :: Symbol) p
+
+
+type family JsonRpcEndpoint a where
+    JsonRpcEndpoint (JsonRpc m p e r)
+        = ReqBody '[JSON] (Request p) :> Post '[JSON] (JsonRpcResponse e r)
+
+    JsonRpcEndpoint (JsonRpcNotification m p)
+        = ReqBody '[JSON] (Request p) :> Post '[JSON] NoContent

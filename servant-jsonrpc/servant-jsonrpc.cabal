@@ -1,13 +1,13 @@
 cabal-version:       2.4
 name:                servant-jsonrpc
-version:             0.1.1
+version:             1.0.0
+synopsis:            Types for representing JSON-RPC messages and endpoints
 homepage:            https://github.com/GambolingPangolin/servant-jsonrpc
 license:             ISC
-author:              The servant-jsonrpc developers
-maintainer:          ics@gambolingpangolin.com
+author:              Ian Shipman <ics@gambolingpangolin.com>
+maintainer:          Ian Shipman <ics@gambolingpangolin.com>
 category:            Web
 build-type:          Simple
-extra-source-files:  CHANGELOG.md
 
 source-repository head
   type:     git
