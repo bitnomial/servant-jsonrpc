@@ -21,8 +21,8 @@ library
     Servant.Client.JsonRpc
 
   build-depends:
-      aeson                         >=1.4           && <2.0
-    , base                          >=4.12          && <5.0
-    , servant                       ==0.16.*
-    , servant-client-core           ==0.16.*
-    , servant-jsonrpc               >=1.0.0         && <2.0
+      aeson                         >= 1.3          && < 1.5
+    , base                          >= 4.11         && < 4.13
+    , servant                       >= 0.14         && < 0.17
+    , servant-client-core           >= 0.14         && < 0.17
+    , servant-jsonrpc               >= 1.0          && < 1.1
