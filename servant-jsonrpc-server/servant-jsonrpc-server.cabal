@@ -1,13 +1,20 @@
 cabal-version:       2.4
+
 name:                servant-jsonrpc-server
 version:             1.0.0
-synopsis:            Instances for expressing servant servers which produce and consume JSON-RPC messages
-homepage:            https://github.com/GambolingPangolin/servant-jsonrpc
-license:             ISC
 author:              Ian Shipman <ics@gambolingpangolin.com>
 maintainer:          Ian Shipman <ics@gambolingpangolin.com>
+
+synopsis:            JSON-RPC servant servers
+description:
+    Use this package to define a servant server which exposes JSON-RPC over HTTP endpoints.
+
+homepage:            https://github.com/GambolingPangolin/servant-jsonrpc
+license:             ISC
 category:            Web
 build-type:          Simple
+
+extra-source-files:  changelog.md
 
 source-repository head
   type:     git

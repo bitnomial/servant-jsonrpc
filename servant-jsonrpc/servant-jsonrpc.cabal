@@ -1,13 +1,23 @@
 cabal-version:       2.4
+
 name:                servant-jsonrpc
 version:             1.0.0
-synopsis:            Types for representing JSON-RPC messages and endpoints
-homepage:            https://github.com/GambolingPangolin/servant-jsonrpc
-license:             ISC
 author:              Ian Shipman <ics@gambolingpangolin.com>
 maintainer:          Ian Shipman <ics@gambolingpangolin.com>
+
+synopsis:            JSON-RPC messages and endpoints
+description:
+    This module contains types that a programmer can use for JSON-RPC requests,
+    server responses, and errors.  It also contains two types which should be
+    used in concert with servant to compose type level API specifications for
+    JSON-RPC endpoints.
+
+homepage:            https://github.com/GambolingPangolin/servant-jsonrpc
+license:             ISC
 category:            Web
 build-type:          Simple
+
+extra-source-files:  changelog.md
 
 source-repository head
   type:     git
