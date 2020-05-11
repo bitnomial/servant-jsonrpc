@@ -10,8 +10,9 @@ description:
     Use this package to generate servant client functions that interact with a
     remote server via JSON-RPC over HTTP.
 
-homepage:            https://github.com/GambolingPangolin/servant-jsonrpc
-license:             ISC
+homepage:            https://github.com/bitnomial/servant-jsonrpc
+license:             BSD-3-Clause
+license-file:        LICENSE
 category:            Web
 build-type:          Simple
 
@@ -19,7 +20,7 @@ extra-source-files:  changelog.md
 
 source-repository head
   type:     git
-  location: https://github.com/GambolingPangolin/servant-jsonrpc.git
+  location: https://github.com/bitnomial/servant-jsonrpc.git
 
 library
   default-language:    Haskell2010
