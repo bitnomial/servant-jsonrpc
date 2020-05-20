@@ -16,3 +16,9 @@ Notes
 * We allow for server messages with `null` for both `error` and `result` keys
 * The client interface hides the `id` key since the semantics of HTTP determine
   which server responses correspond to which client requests.
+
+
+Examples
+----
+
+See the package `./servant-jsonrpc-example` for client, server, and API definition examples.
