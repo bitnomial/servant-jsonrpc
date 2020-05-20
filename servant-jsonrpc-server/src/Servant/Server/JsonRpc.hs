@@ -25,7 +25,6 @@ module Servant.Server.JsonRpc
     ( module Servant.JsonRpc
     ) where
 
-
 import           Control.Monad.Error.Class (throwError)
 import           Data.Aeson                (FromJSON, ToJSON)
 import           Data.Proxy                (Proxy (..))
@@ -34,6 +33,7 @@ import           Servant.API               (NoContent)
 import           Servant.Server            (HasServer (..), err400)
 
 import           Servant.JsonRpc
+
 
 instance (KnownSymbol method, FromJSON p, ToJSON e, ToJSON r)
     => HasServer (JsonRpc method p e r) context where
