@@ -139,14 +139,13 @@ instance (ToJSON e, ToJSON r) => ToJSON (JsonRpcResponse e r) where
         object [ "jsonrpc" .= ("2.0" :: String)
                , "id"      .= ix
                , "error"   .= detail
-
                ]
 
          where
          detail = object [ "code"    .= c
                          , "message" .= msg
                          , "data"    .= err
-                           ]
+                         ]
 
 
 -- | JSON-RPC endpoints which respond with a result
