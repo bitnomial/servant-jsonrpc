@@ -30,6 +30,13 @@ import           Servant.Client.Core (HasClient (..), RunClient)
 import           Servant.JsonRpc
 
 
+-- | The 'RawJsonRpc' construct is completely transparent to clients
+instance (RunClient m, HasClient m api) => HasClient m (RawJsonRpc api) where
+    type Client m (RawJsonRpc api) = Client m api
+    clientWithRoute pxm _  = clientWithRoute pxm (Proxy @api)
+    hoistClientMonad pxm _ = hoistClientMonad pxm (Proxy @api)
+
+
 instance (RunClient m, KnownSymbol method, ToJSON p, FromJSON e, FromJSON r)
     => HasClient m (JsonRpc method p e r) where
 
