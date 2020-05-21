@@ -22,13 +22,21 @@
 module Servant.JsonRpc
     (
     -- * API specification types
-      JsonRpc
+      RawJsonRpc
+    , JsonRpc
     , JsonRpcNotification
 
     -- * JSON-RPC messages
     , Request (..)
     , JsonRpcResponse (..)
     , JsonRpcErr (..)
+
+    -- ** Standard error codes
+    , parseErrorCode
+    , invalidRequestCode
+    , methodNotFoundCode
+    , invalidParamsCode
+    , internalErrorCode
 
     -- * Type rewriting
     , JsonRpcEndpoint
@@ -102,6 +110,26 @@ data JsonRpcErr e = JsonRpcErr
     } deriving (Eq, Show)
 
 
+parseErrorCode :: Int
+parseErrorCode = -32700
+
+
+invalidRequestCode :: Int
+invalidRequestCode = -32600
+
+
+methodNotFoundCode :: Int
+methodNotFoundCode = -32601
+
+
+invalidParamsCode :: Int
+invalidParamsCode = -32602
+
+
+internalErrorCode :: Int
+internalErrorCode = -32603
+
+
 instance (FromJSON e, FromJSON r) => FromJSON (JsonRpcResponse e r) where
     parseJSON = withObject "Response" $ \obj -> do
         ix      <- obj .:  "id"
@@ -146,6 +174,10 @@ instance (ToJSON e, ToJSON r) => ToJSON (JsonRpcResponse e r) where
                          , "message" .= msg
                          , "data"    .= err
                          ]
+
+
+-- | A JSON RPC server handles any number of methods.  Represent this at the type level using this type.
+data RawJsonRpc api
 
 
 -- | JSON-RPC endpoints which respond with a result
