@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                   #-}
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
@@ -8,6 +9,10 @@
 {-# LANGUAGE TypeApplications      #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
+
+#if MIN_VERSION_servant_server(0,18,0)
+{-# LANGUAGE UndecidableInstances  #-}
+#endif
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -45,7 +50,12 @@ import           GHC.TypeLits             (KnownSymbol, symbolVal)
 import           Servant.API              ((:<|>) (..), (:>), JSON,
                                            NoContent (..), Post, ReqBody)
 import           Servant.API.ContentTypes (AllCTRender (..))
+
+#if MIN_VERSION_servant_server(0,18,0)
+import           Servant.Server           (Handler, HasServer (..), HasContextEntry, type (.++), DefaultErrorFormatters, ErrorFormatters)
+#elif MIN_VERSION_servant_server(0,14,0)
 import           Servant.Server           (Handler, HasServer (..))
+#endif
 
 import           Servant.JsonRpc
 
@@ -69,7 +79,11 @@ type RawJsonRpcEndpoint
    :> Post '[JSON] PossibleJsonRpcResponse
 
 
+#if MIN_VERSION_servant_server(0,18,0)
+instance (RouteJsonRpc api, HasContextEntry (context .++ DefaultErrorFormatters) ErrorFormatters) => HasServer (RawJsonRpc api) context where
+#elif MIN_VERSION_servant_server(0,14,0)
 instance RouteJsonRpc api => HasServer (RawJsonRpc api) context where
+#endif
     type ServerT (RawJsonRpc api) m = RpcHandler api m
     route _ cx = route endpoint cx . fmap (serveJsonRpc pxa pxh)
         where
