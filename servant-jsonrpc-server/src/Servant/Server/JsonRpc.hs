@@ -47,12 +47,15 @@ import           Data.Map.Strict          (Map)
 import qualified Data.Map.Strict          as Map
 import           Data.Proxy               (Proxy (..))
 import           GHC.TypeLits             (KnownSymbol, symbolVal)
-import           Servant.API              ((:<|>) (..), (:>), JSON,
-                                           NoContent (..), Post, ReqBody)
+import           Servant.API              (NoContent (..), Post, ReqBody,
+                                           (:<|>) (..), (:>))
 import           Servant.API.ContentTypes (AllCTRender (..))
 
 #if MIN_VERSION_servant_server(0,18,0)
-import           Servant.Server           (Handler, HasServer (..), HasContextEntry, type (.++), DefaultErrorFormatters, ErrorFormatters)
+import           Servant.Server           (DefaultErrorFormatters,
+                                           ErrorFormatters, Handler,
+                                           HasContextEntry, HasServer (..),
+                                           type (.++))
 #elif MIN_VERSION_servant_server(0,14,0)
 import           Servant.Server           (Handler, HasServer (..))
 #endif
@@ -65,7 +68,7 @@ import           Servant.JsonRpc
 data PossibleContent a = SomeContent a | EmptyContent
 
 
-instance ToJSON a => AllCTRender '[JSON] (PossibleContent a) where
+instance ToJSON a => AllCTRender '[JSONRPC] (PossibleContent a) where
     handleAcceptH px h = \case
         SomeContent x -> handleAcceptH px h x
         EmptyContent  -> handleAcceptH px h NoContent
@@ -75,8 +78,8 @@ type PossibleJsonRpcResponse = PossibleContent (JsonRpcResponse Value Value)
 
 
 type RawJsonRpcEndpoint
-    = ReqBody '[JSON] (Request Value)
-   :> Post '[JSON] PossibleJsonRpcResponse
+    = ReqBody '[JSONRPC] (Request Value)
+   :> Post '[JSONRPC] PossibleJsonRpcResponse
 
 
 #if MIN_VERSION_servant_server(0,18,0)

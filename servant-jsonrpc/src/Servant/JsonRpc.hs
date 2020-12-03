@@ -3,6 +3,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeApplications      #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
@@ -25,6 +26,7 @@ module Servant.JsonRpc
       RawJsonRpc
     , JsonRpc
     , JsonRpcNotification
+    , JSONRPC
 
     -- * JSON-RPC messages
     , Request (..)
@@ -47,10 +49,15 @@ import           Control.Applicative (liftA3)
 import           Data.Aeson          (FromJSON (..), ToJSON (..), Value (Null),
                                       object, withObject, (.:), (.:?), (.=))
 import           Data.Aeson.Types    (Parser)
+import           Data.List.NonEmpty  (NonEmpty (..))
 import           Data.Maybe          (isNothing)
+import           Data.Proxy          (Proxy (..))
 import           Data.Word           (Word64)
 import           GHC.TypeLits        (Symbol)
-import           Servant.API         ((:>), JSON, NoContent, Post, ReqBody)
+import           Network.HTTP.Media  ((//))
+import           Servant.API         (Accept (..), JSON, MimeRender (..),
+                                      MimeUnrender (..), NoContent, Post,
+                                      ReqBody, (:>))
 
 
 -- | Client messages
@@ -190,7 +197,22 @@ data JsonRpcNotification (method :: Symbol) p
 
 type family JsonRpcEndpoint a where
     JsonRpcEndpoint (JsonRpc m p e r)
-        = ReqBody '[JSON] (Request p) :> Post '[JSON] (JsonRpcResponse e r)
+        = ReqBody '[JSON, JSONRPC] (Request p) :> Post '[JSON, JSONRPC] (JsonRpcResponse e r)
 
     JsonRpcEndpoint (JsonRpcNotification m p)
-        = ReqBody '[JSON] (Request p) :> Post '[JSON] NoContent
+        = ReqBody '[JSON, JSONRPC] (Request p) :> Post '[JSON, JSONRPC] NoContent
+
+-- | The JSON-RPC content type
+data JSONRPC
+
+
+instance Accept JSONRPC where
+    contentTypes _ = "application" // "json-rpc" :| ["application" // "json"]
+
+
+instance ToJSON a => MimeRender JSONRPC a where
+    mimeRender _ = mimeRender (Proxy @JSON)
+
+
+instance FromJSON a => MimeUnrender JSONRPC a where
+    mimeUnrender _ = mimeUnrender (Proxy @JSON)
