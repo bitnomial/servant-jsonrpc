@@ -1,3 +1,8 @@
+# 1.1.1
+
+* Allow "application/json-rpc" as the content type
+* Accept string for the `id` field
+
 # 1.1.0
 
 * Relax upper version bounds for `aeson` to `(>= 1.3 && < 1.6)`
