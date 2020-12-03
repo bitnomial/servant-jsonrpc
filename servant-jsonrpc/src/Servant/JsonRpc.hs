@@ -45,13 +45,14 @@ module Servant.JsonRpc
     ) where
 
 
-import           Control.Applicative (liftA3)
+import           Control.Applicative (liftA3, (<|>))
 import           Data.Aeson          (FromJSON (..), ToJSON (..), Value (Null),
                                       object, withObject, (.:), (.:?), (.=))
 import           Data.Aeson.Types    (Parser)
 import           Data.List.NonEmpty  (NonEmpty (..))
 import           Data.Maybe          (isNothing)
 import           Data.Proxy          (Proxy (..))
+import           Data.Text.Read      (decimal)
 import           Data.Word           (Word64)
 import           GHC.TypeLits        (Symbol)
 import           Network.HTTP.Media  ((//))
@@ -139,13 +140,15 @@ internalErrorCode = -32603
 
 instance (FromJSON e, FromJSON r) => FromJSON (JsonRpcResponse e r) where
     parseJSON = withObject "Response" $ \obj -> do
-        ix      <- obj .:  "id"
+        ix      <- obj .:  "id" <|> (obj .: "id" >>= parseDecimalString)
         version <- obj .:? "jsonrpc"
         result  <- obj .:? "result"
         err     <- obj .:? "error"
         versionGuard version $ pack ix result err
 
         where
+
+        parseDecimalString = either fail (pure . fmap fst) . traverse decimal
 
         pack (Just ix) (Just r) Nothing = pure $ Result ix r
         pack ix Nothing (Just e)        = Errors ix <$> parseErr e
@@ -197,10 +200,10 @@ data JsonRpcNotification (method :: Symbol) p
 
 type family JsonRpcEndpoint a where
     JsonRpcEndpoint (JsonRpc m p e r)
-        = ReqBody '[JSON, JSONRPC] (Request p) :> Post '[JSON, JSONRPC] (JsonRpcResponse e r)
+        = ReqBody '[JSONRPC] (Request p) :> Post '[JSONRPC] (JsonRpcResponse e r)
 
     JsonRpcEndpoint (JsonRpcNotification m p)
-        = ReqBody '[JSON, JSONRPC] (Request p) :> Post '[JSON, JSONRPC] NoContent
+        = ReqBody '[JSONRPC] (Request p) :> Post '[JSONRPC] NoContent
 
 -- | The JSON-RPC content type
 data JSONRPC
