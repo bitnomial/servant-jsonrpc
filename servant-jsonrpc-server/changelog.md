@@ -1,3 +1,8 @@
+# 2.1.1
+
+* Relax version bounds
+* Remove dependency on `mtl`
+
 # 2.1.0
 
 * Relax upper version bounds for `aeson` to `(>= 1.3 && < 1.6)`
