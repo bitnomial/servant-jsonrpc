@@ -30,7 +30,7 @@ library
     Servant.Server.JsonRpc
 
   build-depends:
-      aeson                 >= 1.3          && < 2.1
+      aeson                 >= 2.0          && < 2.1
     , base                  >= 4.11         && < 5.0
     , containers            >= 0.5          && < 0.7
     , servant               >= 0.14         && < 0.20
