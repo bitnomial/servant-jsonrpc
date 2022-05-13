@@ -1,0 +1,7 @@
+resolver: lts-19.6
+
+packages:
+- servant-jsonrpc
+- servant-jsonrpc-client
+- servant-jsonrpc-examples
+- servant-jsonrpc-server
