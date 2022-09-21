@@ -198,12 +198,12 @@ data JsonRpc (method :: Symbol) p e r
 data JsonRpcNotification (method :: Symbol) p
 
 
-type family JsonRpcEndpoint a where
-    JsonRpcEndpoint (JsonRpc m p e r)
-        = ReqBody '[JSONRPC] (Request p) :> Post '[JSONRPC] (JsonRpcResponse e r)
+type family JsonRpcEndpoint ctyp a where
+    JsonRpcEndpoint ctyp (JsonRpc m p e r)
+        = ReqBody '[ctyp] (Request p) :> Post '[ctyp] (JsonRpcResponse e r)
 
-    JsonRpcEndpoint (JsonRpcNotification m p)
-        = ReqBody '[JSONRPC] (Request p) :> Post '[JSONRPC] NoContent
+    JsonRpcEndpoint ctyp (JsonRpcNotification m p)
+        = ReqBody '[ctyp] (Request p) :> Post '[ctyp] NoContent
 
 -- | The JSON-RPC content type
 data JSONRPC

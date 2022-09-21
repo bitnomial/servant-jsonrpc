@@ -28,6 +28,7 @@ library
 
   exposed-modules:
     Servant.Client.JsonRpc
+    Servant.Client.JsonRpc.ContentType
 
   build-depends:
       aeson                         >= 1.3          && < 2.1
