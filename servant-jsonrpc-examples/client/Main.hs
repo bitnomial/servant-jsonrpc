@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -Wno-unused-do-bind #-}
 
 module Main where
 

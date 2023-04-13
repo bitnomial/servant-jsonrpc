@@ -43,6 +43,7 @@ module Servant.Server.JsonRpc
 import           Data.Aeson               (FromJSON (..), ToJSON (..), Value)
 import           Data.Aeson.Types         (parseEither)
 import           Data.Bifunctor           (bimap)
+import           Data.Kind                (Type)
 import           Data.Map.Strict          (Map)
 import qualified Data.Map.Strict          as Map
 import           Data.Proxy               (Proxy (..))
@@ -99,7 +100,7 @@ instance RouteJsonRpc api => HasServer (RawJsonRpc api) context where
 
 -- | This internal class is how we accumulate a map of handlers for dispatch
 class RouteJsonRpc a where
-    type RpcHandler a (m :: * -> *)
+    type RpcHandler a (m :: Type -> Type)
     jsonRpcRouter
         :: Monad m => Proxy a -> Proxy m -> RpcHandler a m
         -> Map String (Value -> m (PossibleContent (Either (JsonRpcErr Value) Value)))
