@@ -23,7 +23,7 @@ common deps
   build-depends:
       aeson                     >= 1.3              && < 2.2
     , base                      >= 4.11             && < 5.0
-    , servant                   >= 0.14             && < 0.20
+    , servant                   >= 0.14             && < 0.21
     , servant-jsonrpc
 
 library
