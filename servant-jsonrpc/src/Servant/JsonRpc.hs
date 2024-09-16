@@ -189,7 +189,7 @@ instance (ToJSON e, ToJSON r) => ToJSON (JsonRpcResponse e r) where
         ]
 
 -- | A JSON RPC server handles any number of methods.  Represent this at the type level using this type.
-data RawJsonRpc api
+data RawJsonRpc ctype api
 
 -- | JSON-RPC endpoints which respond with a result
 data JsonRpc (method :: Symbol) p e r
@@ -197,11 +197,11 @@ data JsonRpc (method :: Symbol) p e r
 -- | JSON-RPC endpoints which do not respond
 data JsonRpcNotification (method :: Symbol) p
 
-type family JsonRpcEndpoint a where
-  JsonRpcEndpoint (JsonRpc m p e r) =
-    ReqBody '[JSONRPC] (Request p) :> Post '[JSONRPC] (JsonRpcResponse e r)
-  JsonRpcEndpoint (JsonRpcNotification m p) =
-    ReqBody '[JSONRPC] (Request p) :> Post '[JSONRPC] NoContent
+type family JsonRpcEndpoint ctype a where
+  JsonRpcEndpoint ctype (JsonRpc m p e r) =
+    ReqBody '[ctype] (Request p) :> Post '[ctype] (JsonRpcResponse e r)
+  JsonRpcEndpoint ctype (JsonRpcNotification m p) =
+    ReqBody '[ctype] (Request p) :> Post '[ctype] NoContent
 
 -- | The JSON-RPC content type
 data JSONRPC

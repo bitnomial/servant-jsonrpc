@@ -55,6 +55,7 @@ import Servant.API (
   ReqBody,
   (:<|>) (..),
   (:>),
+  JSON,
  )
 import Servant.API.ContentTypes (AllCTRender (..))
 
@@ -85,19 +86,24 @@ instance (ToJSON a) => AllCTRender '[JSONRPC] (PossibleContent a) where
 
 type PossibleJsonRpcResponse = PossibleContent (JsonRpcResponse Value Value)
 
+instance ToJSON a => ToJSON (PossibleContent a) where
+    toJSON = \case
+        SomeContent x -> toJSON x
+        EmptyContent -> toJSON ()
+
 type RawJsonRpcEndpoint =
-  ReqBody '[JSONRPC] (Request Value)
-    :> Post '[JSONRPC] PossibleJsonRpcResponse
+  ReqBody '[JSONRPC, JSON] (Request Value)
+    :> Post '[JSONRPC, JSON] PossibleJsonRpcResponse
 
 #if MIN_VERSION_servant_server(0,18,0)
 instance
   (RouteJsonRpc api, HasContextEntry (context .++ DefaultErrorFormatters) ErrorFormatters) =>
-  HasServer (RawJsonRpc api) context
+  HasServer (RawJsonRpc ctype api) context
   where
 #elif MIN_VERSION_servant_server(0,14,0)
-  instance (RouteJsonRpc api) => HasServer (RawJsonRpc api) context where
+  instance (RouteJsonRpc api) => HasServer (RawJsonRpc ctype api) context where
 #endif
-  type ServerT (RawJsonRpc api) m = RpcHandler api m
+  type ServerT (RawJsonRpc ctype api) m = RpcHandler api m
   route _ cx = route endpoint cx . fmap (serveJsonRpc pxa pxh)
    where
     endpoint = Proxy @RawJsonRpcEndpoint
