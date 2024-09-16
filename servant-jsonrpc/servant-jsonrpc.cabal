@@ -1,7 +1,7 @@
 cabal-version:       2.4
 
 name:                servant-jsonrpc
-version:             1.1.1
+version:             1.2.0
 author:              Ian Shipman <ics@gambolingpangolin.com>
 maintainer:          Ian Shipman <ics@gambolingpangolin.com>
 
