@@ -1,3 +1,7 @@
+# 2.2.0
+
+* Accept either `application/json` or `application/json-rpc` from the client and let the client choose the content type for a response
+
 # 2.1.1
 
 * Relax version bounds

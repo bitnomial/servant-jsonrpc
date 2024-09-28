@@ -1,3 +1,7 @@
+# 1.2.0
+
+* Adds a type parameter to the `JsonRpc` endpoint wrapper to enable the user to choose the content-type in the derived client.
+
 # 1.1.1
 
 * Allow "application/json-rpc" as the content type

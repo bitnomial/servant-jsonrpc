@@ -1,3 +1,7 @@
+# 1.2.0
+
+* Support for user-configured content-type in generated client
+
 # 1.1.0
 
 * Relax upper version bounds for `aeson` to `(>= 1.3 && < 1.6)`
